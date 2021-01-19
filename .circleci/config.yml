@@ -1,0 +1,29 @@
+version: 2.1
+orbs:
+  terraform: circleci/terraform@1.1.1
+
+
+jobs:
+  validate:
+    #terraform orb fmt and validate commands go here
+  test:
+    run: |
+      cp ./test/provider.tf .
+    # python script to render templates goes here
+    # tf orb apply
+    # aws api commands to test
+    # tf orb destroy
+
+
+
+workflows:
+  version: 2
+  main:
+    validate:
+    test:
+      requires: validate
+      context: tf-testing
+    filters: # only run test deployment on master to keep cost under control
+      branches:
+        only:
+          master 

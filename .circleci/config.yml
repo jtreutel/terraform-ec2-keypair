@@ -5,14 +5,11 @@ orbs:
 
 jobs:
   render-test-files:
-    executor: python/3.9.0
+    executor: python/default
     steps:
     - checkout
-    - python/load-cache
-    - python/install-deps:
+    - python/install-packages:
         pip-dependency-file: ./.test/requirements.txt
-        pkg-manager: pip      
-    - python/save-cache
     - run: |
         cd ./test
         python ./render_template.py
@@ -22,7 +19,6 @@ jobs:
           - ./test/rendered/*
   tf-validate:
     executor: terraform/default
-    context: tf-testing
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -33,7 +29,6 @@ jobs:
         
   tf-test-deploy:
     executor: terraform/default
-    context: tf-testing
     steps:
       - run: cp ./rendered/* ..
       - terraform/plan
@@ -45,8 +40,10 @@ workflows:
   main:
     jobs:
       - render-test-files
-      - tf-validate
+      - tf-validate:
+          context: tf-testing
       - tf-test-deploy:
+          context: tf-testing
           filters:
             branches:
               only:

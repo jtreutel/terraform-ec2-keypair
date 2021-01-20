@@ -10,6 +10,7 @@ jobs:
     - checkout
     - python/install-packages:
         pip-dependency-file: ./.test/requirements.txt
+        pkg-manager: pip
     - run: |
         cd ./.test
         python ./render_template.py

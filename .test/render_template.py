@@ -10,7 +10,6 @@ env = Environment(loader=FileSystemLoader('')) #default dir is ./templates
 
 # Create list of all jinja files in templates dir
 template_file_list = glob.glob('./templates/*.j2')
-#print(template_file_list) #debug
 
 if not os.path.exists('rendered'):
     os.makedirs('rendered')
@@ -19,8 +18,8 @@ for file_fullpath in template_file_list:
     template = env.get_template(file_fullpath)
 
     parsed_template = template.render(templatevars)
-    #print(parsed_template) #debug
 
+    #Write rendered template to ./rendered/foo.tf
     filename = re.search(r"(?<=\.\/templates\/).*?(?=\.j2)", file_fullpath).group(0)
     with open(''.join(["./rendered/", filename.removesuffix('.j2')]), "w") as fh:
         fh.write(parsed_template)

@@ -3,6 +3,16 @@ orbs:
   terraform: circleci/terraform@1.1.1
   python: circleci/python@1.3.2
 
+commands:
+  cp-test-files:
+    description: "Moves rendered Terraform test files to Terraform module directory"
+    steps:
+      - attach_workspace:
+          at: ./
+      - run: |
+          cp ./.test/rendered/* .
+
+
 jobs:
   render-test-files:
     executor: python/default
@@ -21,19 +31,16 @@ jobs:
   tf-validate:
     executor: terraform/default
     steps:
-      - attach_workspace:
-          at: ./
-      - run: |
-          cp ./.test/rendered/* .
+      - checkout
+      - cp-test-files
       - terraform/fmt
       - terraform/validate
         
   tf-test-deploy:
     executor: terraform/default
     steps:
-      - attach_workspace:
-          at: ./
-      - run: cp ./rendered/* ..
+      - checkout
+      - cp-test-files
       - terraform/apply
       - terraform/destroy
 

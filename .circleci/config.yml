@@ -1,0 +1,65 @@
+version: 2.1
+orbs:
+  terraform: circleci/terraform@1.1.1
+  python: circleci/python@1.3.2
+
+commands:
+  cp-test-files:
+    description: "Moves rendered Terraform test files to Terraform module directory"
+    steps:
+      - attach_workspace:
+          at: ./
+      - run: |
+          cp ./.test/rendered/* .
+
+
+jobs:
+  render-test-files:
+    executor: python/default
+    steps:
+    - checkout
+    - python/install-packages:
+        pip-dependency-file: ./.test/requirements.txt
+        pkg-manager: pip
+    - run: |
+        cd ./.test
+        python ./render_template.py
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - .test/rendered/*
+  tf-validate:
+    executor: terraform/default
+    steps:
+      - checkout
+      - cp-test-files
+      - terraform/fmt
+      - terraform/validate
+        
+  tf-test-deploy:
+    executor: terraform/default
+    steps:
+      - checkout
+      - cp-test-files
+      - terraform/apply
+      - terraform/destroy
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - render-test-files
+      - tf-validate:
+          context: tf-testing
+          requires: 
+            - render-test-files
+      - tf-test-deploy:
+          context: tf-testing
+          requires: 
+            - tf-validate
+          filters:
+            branches:
+              only:
+                - master
+                - tfmoduletesting #debug
+

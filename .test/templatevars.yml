@@ -1,0 +1,7 @@
+#terraform tfvar templates go here
+# e.g.
+#
+# foo: bar
+aws_region: us-west-1
+tf_instance_name: jenningstest
+attach_eip: false

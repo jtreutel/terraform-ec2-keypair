@@ -1,0 +1,16 @@
+resource "aws_instance" "{{ tf_instance_name }}" {
+  ami           = var.ami_id
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
+{% if attach_eip == True %}
+
+resource "aws_eip" "{{ tf_instance_name }}" {
+  instance = aws_instance.{{ tf_instance_name }}.id
+  vpc      = true
+}
+{% endif %}

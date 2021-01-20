@@ -1,29 +1,47 @@
 version: 2.1
 orbs:
   terraform: circleci/terraform@1.1.1
-
-
-jobs:
-  validate:
-    #terraform orb fmt and validate commands go here
-  test:
-    run: |
-      cp ./test/provider.tf .
-    # python script to render templates goes here
-    # tf orb apply
-    # aws api commands to test
-    # tf orb destroy
-
-
+  python: circleci/python@1.3.2
 
 workflows:
   version: 2
   main:
-    validate:
-    test:
-      requires: validate
-      context: tf-testing
-    filters: # only run test deployment on master to keep cost under control
-      branches:
-        only:
-          master 
+    jobs:
+      - python/install-packages:
+          pip-dependency-file: ./.test/requirements.txt
+          pkg-manager: pip
+      - render-test-files:
+          run: |
+            cd ./test
+            python ./render_template.py
+            cp ./rendered/* ..
+          requires: 
+            - python/install-packages
+      - terraform/fmt:
+          context: tf-testing
+          requires:
+            - render-test-files
+      - terraform/validate:
+          context: tf-testing
+          requires:
+            - terraform/fmt
+      - terraform/plan:
+          context: tf-testing
+          requires:
+            - terraform/validate
+      - terraform/apply:
+          context: tf-testing
+          requires:
+            - terraform/plan
+          filters:
+            branches:
+              only:
+                master 
+      - terraform/destroy:
+          context: tf-testing
+          requires:
+            - terraform/apply
+          filters:
+            branches:
+              only:
+                master 

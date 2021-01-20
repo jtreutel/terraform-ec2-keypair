@@ -42,8 +42,12 @@ workflows:
       - render-test-files
       - tf-validate:
           context: tf-testing
+          requires: 
+            - render-test-files
       - tf-test-deploy:
           context: tf-testing
+          requires: 
+            - tf-validate
           filters:
             branches:
               only:

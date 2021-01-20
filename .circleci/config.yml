@@ -22,17 +22,18 @@ jobs:
     executor: terraform/default
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: ./
       - run: |
-          cp /tmp/workspace/rendered/* .
+          cp ./.test/rendered/* .
       - terraform/fmt
       - terraform/validate
         
   tf-test-deploy:
     executor: terraform/default
     steps:
+      - attach_workspace:
+          at: ./
       - run: cp ./rendered/* ..
-      - terraform/plan
       - terraform/apply
       - terraform/destroy
 

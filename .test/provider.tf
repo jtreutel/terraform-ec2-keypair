@@ -1,1 +1,0 @@
-provider "aws" {} #credentials are configured in the CirceCI context

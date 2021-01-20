@@ -21,5 +21,5 @@ for file_fullpath in template_file_list:
 
     #Write rendered template to ./rendered/foo.tf
     filename = re.search(r"(?<=\.\/templates\/).*?(?=\.j2)", file_fullpath).group(0)
-    with open(''.join(["./rendered/", filename.removesuffix('.j2')]), "w") as fh:
+    with open(''.join(["./rendered/", filename]), "w") as fh:
         fh.write(parsed_template)

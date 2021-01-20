@@ -11,12 +11,12 @@ jobs:
     - python/install-packages:
         pip-dependency-file: ./.test/requirements.txt
     - run: |
-        cd ./test
+        cd ./.test
         python ./render_template.py
     - persist_to_workspace:
         root: /tmp/
         paths:
-          - ./test/rendered/*
+          - ./.test/rendered/*
   tf-validate:
     executor: terraform/default
     steps:

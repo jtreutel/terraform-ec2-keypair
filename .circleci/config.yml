@@ -3,45 +3,53 @@ orbs:
   terraform: circleci/terraform@1.1.1
   python: circleci/python@1.3.2
 
+jobs:
+  render-test-files:
+    executor: python/3.9.0
+    steps:
+    - checkout
+    - python/load-cache
+    - python/install-deps:
+        pip-dependency-file: ./.test/requirements.txt
+        pkg-manager: pip      
+    - python/save-cache
+    - run: |
+        cd ./test
+        python ./render_template.py
+    - persist_to_workspace:
+        root: /tmp/
+        paths:
+          - ./test/rendered/*
+  tf-validate:
+    executor: terraform/default
+    context: tf-testing
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: |
+          cp /tmp/workspace/rendered/* .
+      - terraform/fmt
+      - terraform/validate
+        
+  tf-test-deploy:
+    executor: terraform/default
+    context: tf-testing
+    steps:
+      - run: cp ./rendered/* ..
+      - terraform/plan
+      - terraform/apply
+      - terraform/destroy
+
 workflows:
   version: 2
   main:
     jobs:
-      - python/install-packages:
-          pip-dependency-file: ./.test/requirements.txt
-          pkg-manager: pip
-      - render-test-files:
-          run: |
-            cd ./test
-            python ./render_template.py
-            cp ./rendered/* ..
-          requires: 
-            - python/install-packages
-      - terraform/fmt:
-          context: tf-testing
-          requires:
-            - render-test-files
-      - terraform/validate:
-          context: tf-testing
-          requires:
-            - terraform/fmt
-      - terraform/plan:
-          context: tf-testing
-          requires:
-            - terraform/validate
-      - terraform/apply:
-          context: tf-testing
-          requires:
-            - terraform/plan
+      - render-test-files
+      - tf-validate
+      - tf-test-deploy:
           filters:
             branches:
               only:
-                master 
-      - terraform/destroy:
-          context: tf-testing
-          requires:
-            - terraform/apply
-          filters:
-            branches:
-              only:
-                master 
+                - master
+                - tfmoduletesting #debug
+

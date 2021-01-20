@@ -43,4 +43,3 @@ resource "aws_instance" "webserver" {
   key_name      = module.webserver_key.key_name
 }
 ```
-
